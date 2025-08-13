@@ -185,11 +185,9 @@ car-market-analytics-dashboard/
 ├── car_market_dashboard.html       # Complete dashboard
 ├── data_processing.py              # Data preprocessing script
 ├── README.md                       # Project documentation
-└── screenshots/                    # Dashboard screenshots
-    ├── dashboard_overview.png
-    ├── charts_section.png
-    ├── prediction_tool.png
-    └── car_listings.png
+└── app.py/                         # Dashboard screenshots
+└── Random_Forest_Model             # Model Train 
+    
 ```
 
 ## 📈 Key Insights from Analysis
