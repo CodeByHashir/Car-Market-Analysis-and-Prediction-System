@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Market Analytics Dashboard - Enhanced</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #4ecdc4;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .filters-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .filter-group select, .filter-group input {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            font-size: 14px;
+        }
+        
+        .filter-group select option {
+            background: #2a5298;
+            color: #ffffff;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+        
+        .btn-info {
+            background: linear-gradient(45deg, #45b7d1, #3498db);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .chart-title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+        
+        .chart-canvas {
+            max-height: 400px;
+        }
+        
+        .prediction-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .prediction-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .prediction-result {
+            background: rgba(76, 175, 80, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        .prediction-price {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+        
+        .cars-list-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            display: none;
+        }
+        
+        .cars-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .car-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .car-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #4ecdc4;
+            margin-bottom: 10px;
+            text-transform: capitalize;
+        }
+        
+        .car-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            font-size: 0.9em;
+        }
+        
+        .car-price {
+            grid-column: 1 / -1;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #ff6b6b;
+            margin-top: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-buttons {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>🚗 Car Market Analytics Dashboard</h1>
+            <p>Comprehensive analysis with AI-powered price prediction</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">301</div>
+                <div class="stat-label">Total Cars</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">₹6.02L</div>
+                <div class="stat-label">Average Price</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">52,442</div>
+                <div class="stat-label">Avg. Kilometers</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">2003-2018</div>
+                <div class="stat-label">Year Range</div>
+            </div>
+        </div>
+        <div class="filters-section">
+            <h2>🔍 Filters & Controls</h2>
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label for="fuelFilter">Fuel Type:</label>
+                    <select id="fuelFilter">
+                        <option value="">All Fuel Types</option>
+                        <option value="Petrol">Petrol</option>
+                        <option value="Diesel">Diesel</option>
+                        <option value="CNG">CNG</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="transmissionFilter">Transmission:</label>
+                    <select id="transmissionFilter">
+                        <option value="">All Transmissions</option>
+                        <option value="Manual">Manual</option>
+                        <option value="Automatic">Automatic</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="yearFromFilter">Year From:</label>
+                    <input type="number" id="yearFromFilter" min="2003" max="2018" placeholder="2003">
+                </div>
+                <div class="filter-group">
+                    <label for="yearToFilter">Year To:</label>
+                    <input type="number" id="yearToFilter" min="2003" max="2018" placeholder="2018">
+                </div>
+            </div>
+            <div class="filter-buttons">
+                <button class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
+                <button class="btn btn-secondary" onclick="resetFilters()">Reset Filters</button>
+                <button class="btn btn-info" onclick="toggleCarsList()">List All Cars</button>
+            </div>
+        </div>
+        
+        <div class="prediction-section">
+            <h2>🤖 AI Price Prediction</h2>
+            <p style="margin-bottom: 20px; opacity: 0.9;">Get an estimated selling price for your car using our machine learning model</p>
+            <div class="prediction-form">
+                <div class="filter-group">
+                    <label for="predYear">Year:</label>
+                    <input type="number" id="predYear" min="2003" max="2025" placeholder="2015">
+                </div>
+                <div class="filter-group">
+                    <label for="predPresentPrice">Present Price (₹ Lakhs):</label>
+                    <input type="number" id="predPresentPrice" step="0.01" placeholder="5.59">
+                </div>
+                <div class="filter-group">
+                    <label for="predKms">Driven KMs:</label>
+                    <input type="number" id="predKms" placeholder="27000">
+                </div>
+                <div class="filter-group">
+                    <label for="predFuel">Fuel Type:</label>
+                    <select id="predFuel">
+                        <option value="Petrol">Petrol</option>
+                        <option value="Diesel">Diesel</option>
+                        <option value="CNG">CNG</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="predSeller">Seller Type:</label>
+                    <select id="predSeller">
+                        <option value="Dealer">Dealer</option>
+                        <option value="Individual">Individual</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="predTransmission">Transmission:</label>
+                    <select id="predTransmission">
+                        <option value="Manual">Manual</option>
+                        <option value="Automatic">Automatic</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="predOwner">Previous Owners:</label>
+                    <input type="number" id="predOwner" min="0" max="3" placeholder="0">
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="predictPrice()">Predict Price</button>
+            <div class="prediction-result" id="predictionResult">
+                <h3>Predicted Selling Price:</h3>
+                <div class="prediction-price" id="predictedPrice">₹0.00 Lakhs</div>
+                <p style="margin-top: 10px; opacity: 0.8;">Based on machine learning analysis of market trends</p>
+            </div>
+        </div>
+        
+        <div class="cars-list-section" id="carsListSection">
+            <h2>📋 Filtered Cars List</h2>
+            <div id="carsCount" style="margin-bottom: 15px; opacity: 0.9;"></div>
+            <div class="cars-grid" id="carsGrid">
+                <!-- Cars will be populated here -->
+            </div>
+        </div>
+        
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title">Fuel Type Distribution</div>
+                <canvas id="fuelChart" class="chart-canvas"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Price Trends by Year</div>
+                <canvas id="priceChart" class="chart-canvas"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Price vs Mileage</div>
+                <canvas id="scatterChart" class="chart-canvas"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Top Brands by Average Price</div>
+                <canvas id="brandChart" class="chart-canvas"></canvas>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Car data from Python
+        const carsData = [{"Car_Name": "ritz", "Year": 2014, "Selling_Price": 3.35, "Present_Price": 5.59, "Driven_kms": 27000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "sx4", "Year": 2013, "Selling_Price": 4.75, "Present_Price": 9.54, "Driven_kms": 43000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "ciaz", "Year": 2017, "Selling_Price": 7.25, "Present_Price": 9.85, "Driven_kms": 6900, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "wagon r", "Year": 2011, "Selling_Price": 2.85, "Present_Price": 4.15, "Driven_kms": 5200, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "swift", "Year": 2014, "Selling_Price": 4.6, "Present_Price": 6.87, "Driven_kms": 42450, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "vitara brezza", "Year": 2018, "Selling_Price": 9.25, "Present_Price": 9.83, "Driven_kms": 2071, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "ciaz", "Year": 2015, "Selling_Price": 6.75, "Present_Price": 8.12, "Driven_kms": 18796, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "s cross", "Year": 2015, "Selling_Price": 6.5, "Present_Price": 8.61, "Driven_kms": 33429, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "ciaz", "Year": 2016, "Selling_Price": 8.75, "Present_Price": 8.89, "Driven_kms": 20273, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "ciaz", "Year": 2015, "Selling_Price": 7.45, "Present_Price": 8.92, "Driven_kms": 42367, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "alto 800", "Year": 2017, "Selling_Price": 2.85, "Present_Price": 3.6, "Driven_kms": 2135, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "ciaz", "Year": 2015, "Selling_Price": 6.85, "Present_Price": 10.38, "Driven_kms": 51000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "ciaz", "Year": 2015, "Selling_Price": 7.5, "Present_Price": 9.94, "Driven_kms": 15000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "ertiga", "Year": 2015, "Selling_Price": 6.1, "Present_Price": 7.71, "Driven_kms": 26000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "dzire", "Year": 2009, "Selling_Price": 2.25, "Present_Price": 7.21, "Driven_kms": 77427, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "ertiga", "Year": 2016, "Selling_Price": 7.75, "Present_Price": 10.79, "Driven_kms": 43000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "ertiga", "Year": 2015, "Selling_Price": 7.25, "Present_Price": 10.79, "Driven_kms": 41678, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "ertiga", "Year": 2016, "Selling_Price": 7.75, "Present_Price": 10.79, "Driven_kms": 43000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "wagon r", "Year": 2015, "Selling_Price": 3.25, "Present_Price": 5.09, "Driven_kms": 35500, "Fuel_Type": "CNG", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "sx4", "Year": 2010, "Selling_Price": 2.65, "Present_Price": 7.98, "Driven_kms": 41442, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "alto k10", "Year": 2016, "Selling_Price": 2.85, "Present_Price": 3.95, "Driven_kms": 25000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "ignis", "Year": 2017, "Selling_Price": 4.9, "Present_Price": 5.71, "Driven_kms": 2400, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "sx4", "Year": 2011, "Selling_Price": 4.4, "Present_Price": 8.01, "Driven_kms": 50000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "alto k10", "Year": 2014, "Selling_Price": 2.5, "Present_Price": 3.46, "Driven_kms": 45280, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "wagon r", "Year": 2013, "Selling_Price": 2.9, "Present_Price": 4.41, "Driven_kms": 56879, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "swift", "Year": 2011, "Selling_Price": 3.0, "Present_Price": 4.99, "Driven_kms": 20000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "swift", "Year": 2013, "Selling_Price": 4.15, "Present_Price": 5.87, "Driven_kms": 55138, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "swift", "Year": 2017, "Selling_Price": 6.0, "Present_Price": 6.49, "Driven_kms": 16200, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "alto k10", "Year": 2010, "Selling_Price": 1.95, "Present_Price": 3.95, "Driven_kms": 44542, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "ciaz", "Year": 2015, "Selling_Price": 7.45, "Present_Price": 10.38, "Driven_kms": 45000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "ritz", "Year": 2012, "Selling_Price": 3.1, "Present_Price": 5.98, "Driven_kms": 51439, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "ritz", "Year": 2011, "Selling_Price": 2.35, "Present_Price": 4.89, "Driven_kms": 54200, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "swift", "Year": 2014, "Selling_Price": 4.95, "Present_Price": 7.49, "Driven_kms": 39000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "ertiga", "Year": 2014, "Selling_Price": 6.0, "Present_Price": 9.95, "Driven_kms": 45000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "dzire", "Year": 2014, "Selling_Price": 5.5, "Present_Price": 8.06, "Driven_kms": 45000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "sx4", "Year": 2011, "Selling_Price": 2.95, "Present_Price": 7.74, "Driven_kms": 49998, "Fuel_Type": "CNG", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "dzire", "Year": 2015, "Selling_Price": 4.65, "Present_Price": 7.2, "Driven_kms": 48767, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "800", "Year": 2003, "Selling_Price": 0.35, "Present_Price": 2.28, "Driven_kms": 127000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "alto k10", "Year": 2016, "Selling_Price": 3.0, "Present_Price": 3.76, "Driven_kms": 10079, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "sx4", "Year": 2003, "Selling_Price": 2.25, "Present_Price": 7.98, "Driven_kms": 62000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "baleno", "Year": 2016, "Selling_Price": 5.85, "Present_Price": 7.87, "Driven_kms": 24524, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "alto k10", "Year": 2014, "Selling_Price": 2.55, "Present_Price": 3.98, "Driven_kms": 46706, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "sx4", "Year": 2008, "Selling_Price": 1.95, "Present_Price": 7.15, "Driven_kms": 58000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "dzire", "Year": 2014, "Selling_Price": 5.5, "Present_Price": 8.06, "Driven_kms": 45780, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "omni", "Year": 2012, "Selling_Price": 1.25, "Present_Price": 2.69, "Driven_kms": 50000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "ciaz", "Year": 2014, "Selling_Price": 7.5, "Present_Price": 12.04, "Driven_kms": 15000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "ritz", "Year": 2013, "Selling_Price": 2.65, "Present_Price": 4.89, "Driven_kms": 64532, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "wagon r", "Year": 2006, "Selling_Price": 1.05, "Present_Price": 4.15, "Driven_kms": 65000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "ertiga", "Year": 2015, "Selling_Price": 5.8, "Present_Price": 7.71, "Driven_kms": 25870, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "ciaz", "Year": 2017, "Selling_Price": 7.75, "Present_Price": 9.29, "Driven_kms": 37000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "fortuner", "Year": 2012, "Selling_Price": 14.9, "Present_Price": 30.61, "Driven_kms": 104707, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "fortuner", "Year": 2015, "Selling_Price": 23.0, "Present_Price": 30.61, "Driven_kms": 40000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "innova", "Year": 2017, "Selling_Price": 18.0, "Present_Price": 19.77, "Driven_kms": 15000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "fortuner", "Year": 2013, "Selling_Price": 16.0, "Present_Price": 30.61, "Driven_kms": 135000, "Fuel_Type": "Diesel", "Selling_type": "Individual", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "innova", "Year": 2005, "Selling_Price": 2.75, "Present_Price": 10.21, "Driven_kms": 90000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "corolla altis", "Year": 2009, "Selling_Price": 3.6, "Present_Price": 15.04, "Driven_kms": 70000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "etios cross", "Year": 2015, "Selling_Price": 4.5, "Present_Price": 7.27, "Driven_kms": 40534, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "corolla altis", "Year": 2010, "Selling_Price": 4.75, "Present_Price": 18.54, "Driven_kms": 50000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "etios g", "Year": 2014, "Selling_Price": 4.1, "Present_Price": 6.8, "Driven_kms": 39485, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 1}, {"Car_Name": "fortuner", "Year": 2014, "Selling_Price": 19.99, "Present_Price": 35.96, "Driven_kms": 41000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "corolla altis", "Year": 2013, "Selling_Price": 6.95, "Present_Price": 18.61, "Driven_kms": 40001, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "etios cross", "Year": 2015, "Selling_Price": 4.5, "Present_Price": 7.7, "Driven_kms": 40588, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "fortuner", "Year": 2014, "Selling_Price": 18.75, "Present_Price": 35.96, "Driven_kms": 78000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "fortuner", "Year": 2015, "Selling_Price": 23.5, "Present_Price": 35.96, "Driven_kms": 47000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "fortuner", "Year": 2017, "Selling_Price": 33.0, "Present_Price": 36.23, "Driven_kms": 6000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "etios liva", "Year": 2014, "Selling_Price": 4.75, "Present_Price": 6.95, "Driven_kms": 45000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "innova", "Year": 2017, "Selling_Price": 19.75, "Present_Price": 23.15, "Driven_kms": 11000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "fortuner", "Year": 2010, "Selling_Price": 9.25, "Present_Price": 20.45, "Driven_kms": 59000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "corolla altis", "Year": 2011, "Selling_Price": 4.35, "Present_Price": 13.74, "Driven_kms": 88000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "corolla altis", "Year": 2016, "Selling_Price": 14.25, "Present_Price": 20.91, "Driven_kms": 12000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "etios liva", "Year": 2014, "Selling_Price": 3.95, "Present_Price": 6.76, "Driven_kms": 71000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "corolla altis", "Year": 2011, "Selling_Price": 4.5, "Present_Price": 12.48, "Driven_kms": 45000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "corolla altis", "Year": 2013, "Selling_Price": 7.45, "Present_Price": 18.61, "Driven_kms": 56001, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "etios liva", "Year": 2011, "Selling_Price": 2.65, "Present_Price": 5.71, "Driven_kms": 43000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "etios cross", "Year": 2014, "Selling_Price": 4.9, "Present_Price": 8.93, "Driven_kms": 83000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "etios g", "Year": 2015, "Selling_Price": 3.95, "Present_Price": 6.8, "Driven_kms": 36000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "corolla altis", "Year": 2013, "Selling_Price": 5.5, "Present_Price": 14.68, "Driven_kms": 72000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "corolla", "Year": 2004, "Selling_Price": 1.5, "Present_Price": 12.35, "Driven_kms": 135154, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "corolla altis", "Year": 2010, "Selling_Price": 5.25, "Present_Price": 22.83, "Driven_kms": 80000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "fortuner", "Year": 2012, "Selling_Price": 14.5, "Present_Price": 30.61, "Driven_kms": 89000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "corolla altis", "Year": 2016, "Selling_Price": 14.73, "Present_Price": 14.89, "Driven_kms": 23000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "etios gd", "Year": 2015, "Selling_Price": 4.75, "Present_Price": 7.85, "Driven_kms": 40000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "innova", "Year": 2017, "Selling_Price": 23.0, "Present_Price": 25.39, "Driven_kms": 15000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "innova", "Year": 2015, "Selling_Price": 12.5, "Present_Price": 13.46, "Driven_kms": 38000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "innova", "Year": 2005, "Selling_Price": 3.49, "Present_Price": 13.46, "Driven_kms": 197176, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "camry", "Year": 2006, "Selling_Price": 2.5, "Present_Price": 23.73, "Driven_kms": 142000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Automatic", "Owner": 3}, {"Car_Name": "land cruiser", "Year": 2010, "Selling_Price": 35.0, "Present_Price": 92.6, "Driven_kms": 78000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "corolla altis", "Year": 2012, "Selling_Price": 5.9, "Present_Price": 13.74, "Driven_kms": 56000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "etios liva", "Year": 2013, "Selling_Price": 3.45, "Present_Price": 6.05, "Driven_kms": 47000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "etios g", "Year": 2014, "Selling_Price": 4.75, "Present_Price": 6.76, "Driven_kms": 40000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "corolla altis", "Year": 2009, "Selling_Price": 3.8, "Present_Price": 18.61, "Driven_kms": 62000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "innova", "Year": 2014, "Selling_Price": 11.25, "Present_Price": 16.09, "Driven_kms": 58242, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "innova", "Year": 2005, "Selling_Price": 3.51, "Present_Price": 13.7, "Driven_kms": 75000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "fortuner", "Year": 2015, "Selling_Price": 23.0, "Present_Price": 30.61, "Driven_kms": 40000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "corolla altis", "Year": 2008, "Selling_Price": 4.0, "Present_Price": 22.78, "Driven_kms": 89000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "corolla altis", "Year": 2012, "Selling_Price": 5.85, "Present_Price": 18.61, "Driven_kms": 72000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "innova", "Year": 2016, "Selling_Price": 20.75, "Present_Price": 25.39, "Driven_kms": 29000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "corolla altis", "Year": 2017, "Selling_Price": 17.0, "Present_Price": 18.64, "Driven_kms": 8700, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "corolla altis", "Year": 2013, "Selling_Price": 7.05, "Present_Price": 18.61, "Driven_kms": 45000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "fortuner", "Year": 2010, "Selling_Price": 9.65, "Present_Price": 20.45, "Driven_kms": 50024, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Royal Enfield Thunder 500", "Year": 2016, "Selling_Price": 1.75, "Present_Price": 1.9, "Driven_kms": 3000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "UM Renegade Mojave", "Year": 2017, "Selling_Price": 1.7, "Present_Price": 1.82, "Driven_kms": 1400, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "KTM RC200", "Year": 2017, "Selling_Price": 1.65, "Present_Price": 1.78, "Driven_kms": 4000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Dominar 400", "Year": 2017, "Selling_Price": 1.45, "Present_Price": 1.6, "Driven_kms": 1200, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Royal Enfield Classic 350", "Year": 2017, "Selling_Price": 1.35, "Present_Price": 1.47, "Driven_kms": 4100, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "KTM RC390", "Year": 2015, "Selling_Price": 1.35, "Present_Price": 2.37, "Driven_kms": 21700, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Hyosung GT250R", "Year": 2014, "Selling_Price": 1.35, "Present_Price": 3.45, "Driven_kms": 16500, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 1}, {"Car_Name": "Royal Enfield Thunder 350", "Year": 2013, "Selling_Price": 1.25, "Present_Price": 1.5, "Driven_kms": 15000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Royal Enfield Thunder 350", "Year": 2016, "Selling_Price": 1.2, "Present_Price": 1.5, "Driven_kms": 18000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Royal Enfield Classic 350", "Year": 2017, "Selling_Price": 1.2, "Present_Price": 1.47, "Driven_kms": 11000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "KTM RC200", "Year": 2016, "Selling_Price": 1.2, "Present_Price": 1.78, "Driven_kms": 6000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Royal Enfield Thunder 350", "Year": 2016, "Selling_Price": 1.15, "Present_Price": 1.5, "Driven_kms": 8700, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "KTM 390 Duke ", "Year": 2014, "Selling_Price": 1.15, "Present_Price": 2.4, "Driven_kms": 7000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Mahindra Mojo XT300", "Year": 2016, "Selling_Price": 1.15, "Present_Price": 1.4, "Driven_kms": 35000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Royal Enfield Classic 350", "Year": 2015, "Selling_Price": 1.15, "Present_Price": 1.47, "Driven_kms": 17000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Royal Enfield Classic 350", "Year": 2015, "Selling_Price": 1.11, "Present_Price": 1.47, "Driven_kms": 17500, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Royal Enfield Classic 350", "Year": 2013, "Selling_Price": 1.1, "Present_Price": 1.47, "Driven_kms": 33000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Royal Enfield Thunder 500", "Year": 2015, "Selling_Price": 1.1, "Present_Price": 1.9, "Driven_kms": 14000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Royal Enfield Classic 350", "Year": 2015, "Selling_Price": 1.1, "Present_Price": 1.47, "Driven_kms": 26000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Royal Enfield Thunder 500", "Year": 2013, "Selling_Price": 1.05, "Present_Price": 1.9, "Driven_kms": 5400, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Pulsar RS200", "Year": 2016, "Selling_Price": 1.05, "Present_Price": 1.26, "Driven_kms": 5700, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Royal Enfield Thunder 350", "Year": 2011, "Selling_Price": 1.05, "Present_Price": 1.5, "Driven_kms": 6900, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Royal Enfield Bullet 350", "Year": 2016, "Selling_Price": 1.05, "Present_Price": 1.17, "Driven_kms": 6000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Royal Enfield Classic 350", "Year": 2013, "Selling_Price": 1.0, "Present_Price": 1.47, "Driven_kms": 46500, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Royal Enfield Classic 500", "Year": 2012, "Selling_Price": 0.95, "Present_Price": 1.75, "Driven_kms": 11500, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Royal Enfield Classic 500", "Year": 2009, "Selling_Price": 0.9, "Present_Price": 1.75, "Driven_kms": 40000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Avenger 220", "Year": 2017, "Selling_Price": 0.9, "Present_Price": 0.95, "Driven_kms": 1300, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Avenger 150", "Year": 2016, "Selling_Price": 0.75, "Present_Price": 0.8, "Driven_kms": 7000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Honda CB Hornet 160R", "Year": 2017, "Selling_Price": 0.8, "Present_Price": 0.87, "Driven_kms": 3000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Yamaha FZ S V 2.0", "Year": 2017, "Selling_Price": 0.78, "Present_Price": 0.84, "Driven_kms": 5000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Honda CB Hornet 160R", "Year": 2017, "Selling_Price": 0.75, "Present_Price": 0.87, "Driven_kms": 11000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Yamaha FZ 16", "Year": 2015, "Selling_Price": 0.75, "Present_Price": 0.82, "Driven_kms": 18000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Avenger 220", "Year": 2017, "Selling_Price": 0.75, "Present_Price": 0.95, "Driven_kms": 3500, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Avenger 220", "Year": 2016, "Selling_Price": 0.72, "Present_Price": 0.95, "Driven_kms": 500, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "TVS Apache RTR 160", "Year": 2017, "Selling_Price": 0.65, "Present_Price": 0.81, "Driven_kms": 11800, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Pulsar 150", "Year": 2015, "Selling_Price": 0.65, "Present_Price": 0.74, "Driven_kms": 5000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Honda CBR 150", "Year": 2014, "Selling_Price": 0.65, "Present_Price": 1.2, "Driven_kms": 23500, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Hero Extreme", "Year": 2013, "Selling_Price": 0.65, "Present_Price": 0.787, "Driven_kms": 16000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Honda CB Hornet 160R", "Year": 2016, "Selling_Price": 0.6, "Present_Price": 0.87, "Driven_kms": 15000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Avenger 220 dtsi", "Year": 2015, "Selling_Price": 0.6, "Present_Price": 0.95, "Driven_kms": 16600, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Honda CBR 150", "Year": 2013, "Selling_Price": 0.6, "Present_Price": 1.2, "Driven_kms": 32000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Avenger 150 street", "Year": 2016, "Selling_Price": 0.6, "Present_Price": 0.8, "Driven_kms": 20000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Yamaha FZ  v 2.0", "Year": 2015, "Selling_Price": 0.6, "Present_Price": 0.84, "Driven_kms": 29000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Yamaha FZ  v 2.0", "Year": 2016, "Selling_Price": 0.6, "Present_Price": 0.84, "Driven_kms": 25000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Pulsar  NS 200", "Year": 2014, "Selling_Price": 0.6, "Present_Price": 0.99, "Driven_kms": 25000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "TVS Apache RTR 160", "Year": 2012, "Selling_Price": 0.6, "Present_Price": 0.81, "Driven_kms": 19000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Hero Extreme", "Year": 2014, "Selling_Price": 0.55, "Present_Price": 0.787, "Driven_kms": 15000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Yamaha FZ S V 2.0", "Year": 2015, "Selling_Price": 0.55, "Present_Price": 0.84, "Driven_kms": 58000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Pulsar 220 F", "Year": 2010, "Selling_Price": 0.52, "Present_Price": 0.94, "Driven_kms": 45000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Pulsar 220 F", "Year": 2016, "Selling_Price": 0.51, "Present_Price": 0.94, "Driven_kms": 24000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "TVS Apache RTR 180", "Year": 2011, "Selling_Price": 0.5, "Present_Price": 0.826, "Driven_kms": 6000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Hero Passion X pro", "Year": 2016, "Selling_Price": 0.5, "Present_Price": 0.55, "Driven_kms": 31000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Pulsar NS 200", "Year": 2012, "Selling_Price": 0.5, "Present_Price": 0.99, "Driven_kms": 13000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Pulsar NS 200", "Year": 2013, "Selling_Price": 0.5, "Present_Price": 0.99, "Driven_kms": 45000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Yamaha Fazer ", "Year": 2014, "Selling_Price": 0.5, "Present_Price": 0.88, "Driven_kms": 8000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Honda Activa 4G", "Year": 2017, "Selling_Price": 0.48, "Present_Price": 0.51, "Driven_kms": 4300, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "TVS Sport ", "Year": 2017, "Selling_Price": 0.48, "Present_Price": 0.52, "Driven_kms": 15000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Yamaha FZ S V 2.0", "Year": 2015, "Selling_Price": 0.48, "Present_Price": 0.84, "Driven_kms": 23000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Honda Dream Yuga ", "Year": 2017, "Selling_Price": 0.48, "Present_Price": 0.54, "Driven_kms": 8600, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Honda Activa 4G", "Year": 2017, "Selling_Price": 0.45, "Present_Price": 0.51, "Driven_kms": 4000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "Bajaj Avenger Street 220", "Year": 2011, "Selling_Price": 0.45, "Present_Price": 0.95, "Driven_kms": 24000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "TVS Apache RTR 180", "Year": 2014, "Selling_Price": 0.45, "Present_Price": 0.826, "Driven_kms": 23000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Pulsar NS 200", "Year": 2012, "Selling_Price": 0.45, "Present_Price": 0.99, "Driven_kms": 14500, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Avenger 220 dtsi", "Year": 2010, "Selling_Price": 0.45, "Present_Price": 0.95, "Driven_kms": 27000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Hero Splender iSmart", "Year": 2016, "Selling_Price": 0.45, "Present_Price": 0.54, "Driven_kms": 14000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Activa 3g", "Year": 2016, "Selling_Price": 0.45, "Present_Price": 0.54, "Driven_kms": 500, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "Hero Passion Pro", "Year": 2016, "Selling_Price": 0.45, "Present_Price": 0.55, "Driven_kms": 1000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "TVS Apache RTR 160", "Year": 2014, "Selling_Price": 0.42, "Present_Price": 0.81, "Driven_kms": 42000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Honda CB Trigger", "Year": 2013, "Selling_Price": 0.42, "Present_Price": 0.73, "Driven_kms": 12000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Hero Splender iSmart", "Year": 2015, "Selling_Price": 0.4, "Present_Price": 0.54, "Driven_kms": 14000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Yamaha FZ S ", "Year": 2012, "Selling_Price": 0.4, "Present_Price": 0.83, "Driven_kms": 5500, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Hero Passion Pro", "Year": 2015, "Selling_Price": 0.4, "Present_Price": 0.55, "Driven_kms": 6700, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Pulsar 135 LS", "Year": 2014, "Selling_Price": 0.4, "Present_Price": 0.64, "Driven_kms": 13700, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Activa 4g", "Year": 2017, "Selling_Price": 0.4, "Present_Price": 0.51, "Driven_kms": 1300, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "Honda CB Unicorn", "Year": 2015, "Selling_Price": 0.38, "Present_Price": 0.72, "Driven_kms": 38600, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Hero Honda CBZ extreme", "Year": 2011, "Selling_Price": 0.38, "Present_Price": 0.787, "Driven_kms": 75000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Honda Karizma", "Year": 2011, "Selling_Price": 0.35, "Present_Price": 1.05, "Driven_kms": 30000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Honda Activa 125", "Year": 2016, "Selling_Price": 0.35, "Present_Price": 0.57, "Driven_kms": 24000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "TVS Jupyter", "Year": 2014, "Selling_Price": 0.35, "Present_Price": 0.52, "Driven_kms": 19000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "Honda Karizma", "Year": 2010, "Selling_Price": 0.31, "Present_Price": 1.05, "Driven_kms": 213000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Hero Honda Passion Pro", "Year": 2012, "Selling_Price": 0.3, "Present_Price": 0.51, "Driven_kms": 60000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Hero Splender Plus", "Year": 2016, "Selling_Price": 0.3, "Present_Price": 0.48, "Driven_kms": 50000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Honda CB Shine", "Year": 2013, "Selling_Price": 0.3, "Present_Price": 0.58, "Driven_kms": 30000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Discover 100", "Year": 2013, "Selling_Price": 0.27, "Present_Price": 0.47, "Driven_kms": 21000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Pulsar 150", "Year": 2008, "Selling_Price": 0.25, "Present_Price": 0.75, "Driven_kms": 26000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 1}, {"Car_Name": "Suzuki Access 125", "Year": 2008, "Selling_Price": 0.25, "Present_Price": 0.58, "Driven_kms": 1900, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "TVS Wego", "Year": 2010, "Selling_Price": 0.25, "Present_Price": 0.52, "Driven_kms": 22000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "Honda CB twister", "Year": 2013, "Selling_Price": 0.25, "Present_Price": 0.51, "Driven_kms": 32000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Hero Glamour", "Year": 2013, "Selling_Price": 0.25, "Present_Price": 0.57, "Driven_kms": 18000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Hero Super Splendor", "Year": 2005, "Selling_Price": 0.2, "Present_Price": 0.57, "Driven_kms": 55000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Pulsar 150", "Year": 2008, "Selling_Price": 0.2, "Present_Price": 0.75, "Driven_kms": 60000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Discover 125", "Year": 2012, "Selling_Price": 0.2, "Present_Price": 0.57, "Driven_kms": 25000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 1}, {"Car_Name": "Hero Hunk", "Year": 2007, "Selling_Price": 0.2, "Present_Price": 0.75, "Driven_kms": 49000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 1}, {"Car_Name": "Hero  Ignitor Disc", "Year": 2013, "Selling_Price": 0.2, "Present_Price": 0.65, "Driven_kms": 24000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 1}, {"Car_Name": "Hero  CBZ Xtreme", "Year": 2008, "Selling_Price": 0.2, "Present_Price": 0.787, "Driven_kms": 50000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj  ct 100", "Year": 2015, "Selling_Price": 0.18, "Present_Price": 0.32, "Driven_kms": 35000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Activa 3g", "Year": 2008, "Selling_Price": 0.17, "Present_Price": 0.52, "Driven_kms": 500000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "Honda CB twister", "Year": 2010, "Selling_Price": 0.16, "Present_Price": 0.51, "Driven_kms": 33000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Discover 125", "Year": 2011, "Selling_Price": 0.15, "Present_Price": 0.57, "Driven_kms": 35000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 1}, {"Car_Name": "Honda CB Shine", "Year": 2007, "Selling_Price": 0.12, "Present_Price": 0.58, "Driven_kms": 53000, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "Bajaj Pulsar 150", "Year": 2006, "Selling_Price": 0.1, "Present_Price": 0.75, "Driven_kms": 92233, "Fuel_Type": "Petrol", "Selling_type": "Individual", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "i20", "Year": 2010, "Selling_Price": 3.25, "Present_Price": 6.79, "Driven_kms": 58000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 1}, {"Car_Name": "grand i10", "Year": 2015, "Selling_Price": 4.4, "Present_Price": 5.7, "Driven_kms": 28200, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "i10", "Year": 2011, "Selling_Price": 2.95, "Present_Price": 4.6, "Driven_kms": 53460, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "eon", "Year": 2015, "Selling_Price": 2.75, "Present_Price": 4.43, "Driven_kms": 28282, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "grand i10", "Year": 2016, "Selling_Price": 5.25, "Present_Price": 5.7, "Driven_kms": 3493, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 1}, {"Car_Name": "xcent", "Year": 2017, "Selling_Price": 5.75, "Present_Price": 7.13, "Driven_kms": 12479, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "grand i10", "Year": 2015, "Selling_Price": 5.15, "Present_Price": 5.7, "Driven_kms": 34797, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "i20", "Year": 2017, "Selling_Price": 7.9, "Present_Price": 8.1, "Driven_kms": 3435, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "grand i10", "Year": 2015, "Selling_Price": 4.85, "Present_Price": 5.7, "Driven_kms": 21125, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "i10", "Year": 2012, "Selling_Price": 3.1, "Present_Price": 4.6, "Driven_kms": 35775, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "elantra", "Year": 2015, "Selling_Price": 11.75, "Present_Price": 14.79, "Driven_kms": 43535, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "creta", "Year": 2016, "Selling_Price": 11.25, "Present_Price": 13.6, "Driven_kms": 22671, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "i20", "Year": 2011, "Selling_Price": 2.9, "Present_Price": 6.79, "Driven_kms": 31604, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "grand i10", "Year": 2017, "Selling_Price": 5.25, "Present_Price": 5.7, "Driven_kms": 20114, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "verna", "Year": 2012, "Selling_Price": 4.5, "Present_Price": 9.4, "Driven_kms": 36100, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "eon", "Year": 2016, "Selling_Price": 2.9, "Present_Price": 4.43, "Driven_kms": 12500, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "eon", "Year": 2016, "Selling_Price": 3.15, "Present_Price": 4.43, "Driven_kms": 15000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "verna", "Year": 2014, "Selling_Price": 6.45, "Present_Price": 8.4, "Driven_kms": 45078, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "verna", "Year": 2012, "Selling_Price": 4.5, "Present_Price": 9.4, "Driven_kms": 36000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "eon", "Year": 2017, "Selling_Price": 3.5, "Present_Price": 5.43, "Driven_kms": 38488, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "i20", "Year": 2013, "Selling_Price": 4.5, "Present_Price": 6.79, "Driven_kms": 32000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "i20", "Year": 2014, "Selling_Price": 6.0, "Present_Price": 7.6, "Driven_kms": 77632, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "verna", "Year": 2015, "Selling_Price": 8.25, "Present_Price": 9.4, "Driven_kms": 61381, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "verna", "Year": 2013, "Selling_Price": 5.11, "Present_Price": 9.4, "Driven_kms": 36198, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "i10", "Year": 2011, "Selling_Price": 2.7, "Present_Price": 4.6, "Driven_kms": 22517, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "grand i10", "Year": 2015, "Selling_Price": 5.25, "Present_Price": 5.7, "Driven_kms": 24678, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "i10", "Year": 2011, "Selling_Price": 2.55, "Present_Price": 4.43, "Driven_kms": 57000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "verna", "Year": 2012, "Selling_Price": 4.95, "Present_Price": 9.4, "Driven_kms": 60000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "i20", "Year": 2012, "Selling_Price": 3.1, "Present_Price": 6.79, "Driven_kms": 52132, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "verna", "Year": 2013, "Selling_Price": 6.15, "Present_Price": 9.4, "Driven_kms": 45000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "verna", "Year": 2017, "Selling_Price": 9.25, "Present_Price": 9.4, "Driven_kms": 15001, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "elantra", "Year": 2015, "Selling_Price": 11.45, "Present_Price": 14.79, "Driven_kms": 12900, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "grand i10", "Year": 2013, "Selling_Price": 3.9, "Present_Price": 5.7, "Driven_kms": 53000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "grand i10", "Year": 2015, "Selling_Price": 5.5, "Present_Price": 5.7, "Driven_kms": 4492, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "verna", "Year": 2017, "Selling_Price": 9.1, "Present_Price": 9.4, "Driven_kms": 15141, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "eon", "Year": 2016, "Selling_Price": 3.1, "Present_Price": 4.43, "Driven_kms": 11849, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "creta", "Year": 2015, "Selling_Price": 11.25, "Present_Price": 13.6, "Driven_kms": 68000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "verna", "Year": 2013, "Selling_Price": 4.8, "Present_Price": 9.4, "Driven_kms": 60241, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "eon", "Year": 2012, "Selling_Price": 2.0, "Present_Price": 4.43, "Driven_kms": 23709, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "verna", "Year": 2012, "Selling_Price": 5.35, "Present_Price": 9.4, "Driven_kms": 32322, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "xcent", "Year": 2015, "Selling_Price": 4.75, "Present_Price": 7.13, "Driven_kms": 35866, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 1}, {"Car_Name": "xcent", "Year": 2014, "Selling_Price": 4.4, "Present_Price": 7.13, "Driven_kms": 34000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "i20", "Year": 2016, "Selling_Price": 6.25, "Present_Price": 7.6, "Driven_kms": 7000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "verna", "Year": 2013, "Selling_Price": 5.95, "Present_Price": 9.4, "Driven_kms": 49000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "verna", "Year": 2012, "Selling_Price": 5.2, "Present_Price": 9.4, "Driven_kms": 71000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "i20", "Year": 2012, "Selling_Price": 3.75, "Present_Price": 6.79, "Driven_kms": 35000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "verna", "Year": 2015, "Selling_Price": 5.95, "Present_Price": 9.4, "Driven_kms": 36000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "i10", "Year": 2013, "Selling_Price": 4.0, "Present_Price": 4.6, "Driven_kms": 30000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "i20", "Year": 2016, "Selling_Price": 5.25, "Present_Price": 7.6, "Driven_kms": 17000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "creta", "Year": 2016, "Selling_Price": 12.9, "Present_Price": 13.6, "Driven_kms": 35934, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2013, "Selling_Price": 5.0, "Present_Price": 9.9, "Driven_kms": 56701, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "brio", "Year": 2015, "Selling_Price": 5.4, "Present_Price": 6.82, "Driven_kms": 31427, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "city", "Year": 2014, "Selling_Price": 7.2, "Present_Price": 9.9, "Driven_kms": 48000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2013, "Selling_Price": 5.25, "Present_Price": 9.9, "Driven_kms": 54242, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "brio", "Year": 2012, "Selling_Price": 3.0, "Present_Price": 5.35, "Driven_kms": 53675, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2016, "Selling_Price": 10.25, "Present_Price": 13.6, "Driven_kms": 49562, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2015, "Selling_Price": 8.5, "Present_Price": 13.6, "Driven_kms": 40324, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2015, "Selling_Price": 8.4, "Present_Price": 13.6, "Driven_kms": 25000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "amaze", "Year": 2014, "Selling_Price": 3.9, "Present_Price": 7.0, "Driven_kms": 36054, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2016, "Selling_Price": 9.15, "Present_Price": 13.6, "Driven_kms": 29223, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "brio", "Year": 2016, "Selling_Price": 5.5, "Present_Price": 5.97, "Driven_kms": 5600, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "amaze", "Year": 2015, "Selling_Price": 4.0, "Present_Price": 5.8, "Driven_kms": 40023, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "jazz", "Year": 2016, "Selling_Price": 6.6, "Present_Price": 7.7, "Driven_kms": 16002, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "amaze", "Year": 2015, "Selling_Price": 4.0, "Present_Price": 7.0, "Driven_kms": 40026, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "jazz", "Year": 2017, "Selling_Price": 6.5, "Present_Price": 8.7, "Driven_kms": 21200, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "amaze", "Year": 2014, "Selling_Price": 3.65, "Present_Price": 7.0, "Driven_kms": 35000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2016, "Selling_Price": 8.35, "Present_Price": 9.4, "Driven_kms": 19434, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "brio", "Year": 2017, "Selling_Price": 4.8, "Present_Price": 5.8, "Driven_kms": 19000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2015, "Selling_Price": 6.7, "Present_Price": 10.0, "Driven_kms": 18828, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2011, "Selling_Price": 4.1, "Present_Price": 10.0, "Driven_kms": 69341, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2009, "Selling_Price": 3.0, "Present_Price": 10.0, "Driven_kms": 69562, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2015, "Selling_Price": 7.5, "Present_Price": 10.0, "Driven_kms": 27600, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "jazz", "Year": 2010, "Selling_Price": 2.25, "Present_Price": 7.5, "Driven_kms": 61203, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "brio", "Year": 2014, "Selling_Price": 5.3, "Present_Price": 6.8, "Driven_kms": 16500, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2016, "Selling_Price": 10.9, "Present_Price": 13.6, "Driven_kms": 30753, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "city", "Year": 2015, "Selling_Price": 8.65, "Present_Price": 13.6, "Driven_kms": 24800, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2015, "Selling_Price": 9.7, "Present_Price": 13.6, "Driven_kms": 21780, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "jazz", "Year": 2016, "Selling_Price": 6.0, "Present_Price": 8.4, "Driven_kms": 4000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2014, "Selling_Price": 6.25, "Present_Price": 13.6, "Driven_kms": 40126, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "brio", "Year": 2015, "Selling_Price": 5.25, "Present_Price": 5.9, "Driven_kms": 14465, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2006, "Selling_Price": 2.1, "Present_Price": 7.6, "Driven_kms": 50456, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2014, "Selling_Price": 8.25, "Present_Price": 14.0, "Driven_kms": 63000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2016, "Selling_Price": 8.99, "Present_Price": 11.8, "Driven_kms": 9010, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "brio", "Year": 2013, "Selling_Price": 3.5, "Present_Price": 5.9, "Driven_kms": 9800, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "jazz", "Year": 2016, "Selling_Price": 7.4, "Present_Price": 8.5, "Driven_kms": 15059, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "jazz", "Year": 2016, "Selling_Price": 5.65, "Present_Price": 7.9, "Driven_kms": 28569, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "amaze", "Year": 2015, "Selling_Price": 5.75, "Present_Price": 7.5, "Driven_kms": 44000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Automatic", "Owner": 0}, {"Car_Name": "city", "Year": 2015, "Selling_Price": 8.4, "Present_Price": 13.6, "Driven_kms": 34000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2016, "Selling_Price": 10.11, "Present_Price": 13.6, "Driven_kms": 10980, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "amaze", "Year": 2014, "Selling_Price": 4.5, "Present_Price": 6.4, "Driven_kms": 19000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "brio", "Year": 2015, "Selling_Price": 5.4, "Present_Price": 6.1, "Driven_kms": 31427, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "jazz", "Year": 2016, "Selling_Price": 6.4, "Present_Price": 8.4, "Driven_kms": 12000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2010, "Selling_Price": 3.25, "Present_Price": 9.9, "Driven_kms": 38000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "amaze", "Year": 2014, "Selling_Price": 3.75, "Present_Price": 6.8, "Driven_kms": 33019, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2015, "Selling_Price": 8.55, "Present_Price": 13.09, "Driven_kms": 60076, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2016, "Selling_Price": 9.5, "Present_Price": 11.6, "Driven_kms": 33988, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "brio", "Year": 2015, "Selling_Price": 4.0, "Present_Price": 5.9, "Driven_kms": 60000, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2009, "Selling_Price": 3.35, "Present_Price": 11.0, "Driven_kms": 87934, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "city", "Year": 2017, "Selling_Price": 11.5, "Present_Price": 12.5, "Driven_kms": 9000, "Fuel_Type": "Diesel", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}, {"Car_Name": "brio", "Year": 2016, "Selling_Price": 5.3, "Present_Price": 5.9, "Driven_kms": 5464, "Fuel_Type": "Petrol", "Selling_type": "Dealer", "Transmission": "Manual", "Owner": 0}];
+        let filteredCars = [...carsData];
+        let charts = {};
+        
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            updateCarsDisplay();
+        });
+        
+        // Filter functions
+        function applyFilters() {
+            const fuelFilter = document.getElementById('fuelFilter').value;
+            const transmissionFilter = document.getElementById('transmissionFilter').value;
+            const yearFrom = parseInt(document.getElementById('yearFromFilter').value) || 2003;
+            const yearTo = parseInt(document.getElementById('yearToFilter').value) || 2018;
+            
+            filteredCars = carsData.filter(car => {
+                return (!fuelFilter || car.Fuel_Type === fuelFilter) &&
+                       (!transmissionFilter || car.Transmission === transmissionFilter) &&
+                       (car.Year >= yearFrom && car.Year <= yearTo);
+            });
+            
+            updateCarsDisplay();
+            updateCharts();
+        }
+        
+        function resetFilters() {
+            document.getElementById('fuelFilter').value = '';
+            document.getElementById('transmissionFilter').value = '';
+            document.getElementById('yearFromFilter').value = '';
+            document.getElementById('yearToFilter').value = '';
+            filteredCars = [...carsData];
+            updateCarsDisplay();
+            updateCharts();
+        }
+        
+        function toggleCarsList() {
+            const section = document.getElementById('carsListSection');
+            section.style.display = section.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        // Update cars display
+        function updateCarsDisplay() {
+            const grid = document.getElementById('carsGrid');
+            const count = document.getElementById('carsCount');
+            
+            count.textContent = `Showing ${filteredCars.length} cars`;
+            
+            grid.innerHTML = filteredCars.map(car => `
+                <div class="car-card">
+                    <div class="car-header">
+                        <h3>${car.Car_Name}</h3>
+                        <div class="car-year">${car.Year}</div>
+                    </div>
+                    <div class="car-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Selling Price:</span>
+                            <span class="detail-value">₹${car.Selling_Price} L</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Present Price:</span>
+                            <span class="detail-value">₹${car.Present_Price} L</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Driven:</span>
+                            <span class="detail-value">${car.Driven_kms.toLocaleString()} km</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Fuel:</span>
+                            <span class="detail-value">${car.Fuel_Type}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Transmission:</span>
+                            <span class="detail-value">${car.Transmission}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Seller:</span>
+                            <span class="detail-value">${car.Selling_type}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Price prediction function
+        function predictPrice() {
+            const year = parseInt(document.getElementById('predYear').value);
+            const presentPrice = parseFloat(document.getElementById('predPresentPrice').value);
+            const kms = parseInt(document.getElementById('predKms').value);
+            const fuel = document.getElementById('predFuel').value;
+            const seller = document.getElementById('predSeller').value;
+            const transmission = document.getElementById('predTransmission').value;
+            const owner = parseInt(document.getElementById('predOwner').value);
+            
+            if (!year || !presentPrice || !kms) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            // Simple prediction algorithm based on data patterns
+            let basePrice = presentPrice;
+            
+            // Depreciation by year
+            const currentYear = 2018; // Based on dataset
+            const age = currentYear - year;
+            basePrice *= Math.pow(0.85, age);
+            
+            // Mileage adjustment
+            if (kms > 50000) basePrice *= 0.9;
+            if (kms > 100000) basePrice *= 0.85;
+            
+            // Fuel type adjustment
+            if (fuel === 'Diesel') basePrice *= 1.05;
+            if (fuel === 'CNG') basePrice *= 0.95;
+            
+            // Transmission adjustment
+            if (transmission === 'Automatic') basePrice *= 1.1;
+            
+            // Seller type adjustment
+            if (seller === 'Individual') basePrice *= 0.95;
+            
+            // Owner adjustment
+            basePrice *= Math.pow(0.9, owner);
+            
+            const predictedPrice = Math.max(basePrice, 0.5);
+            
+            document.getElementById('predictedPrice').textContent = `₹${predictedPrice.toFixed(2)} Lakhs`;
+            document.getElementById('predictionResult').style.display = 'block';
+        }
+        
+        // Chart initialization
+        function initializeCharts() {
+            // Fuel type distribution
+            const fuelCounts = {};
+            carsData.forEach(car => {
+                fuelCounts[car.Fuel_Type] = (fuelCounts[car.Fuel_Type] || 0) + 1;
+            });
+            
+            charts.fuel = new Chart(document.getElementById('fuelChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(fuelCounts),
+                    datasets: [{
+                        data: Object.values(fuelCounts),
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            
+            // Price trends by year
+            const yearPrices = {};
+            carsData.forEach(car => {
+                if (!yearPrices[car.Year]) yearPrices[car.Year] = [];
+                yearPrices[car.Year].push(car.Selling_Price);
+            });
+            
+            const years = Object.keys(yearPrices).sort();
+            const avgPrices = years.map(year => 
+                yearPrices[year].reduce((a, b) => a + b, 0) / yearPrices[year].length
+            );
+            
+            charts.price = new Chart(document.getElementById('priceChart'), {
+                type: 'line',
+                data: {
+                    labels: years,
+                    datasets: [{
+                        label: 'Average Selling Price',
+                        data: avgPrices,
+                        borderColor: '#36A2EB',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Price (₹ Lakhs)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Price vs Mileage scatter
+            charts.scatter = new Chart(document.getElementById('scatterChart'), {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Cars',
+                        data: carsData.map(car => ({
+                            x: car.Driven_kms,
+                            y: car.Selling_Price
+                        })),
+                        backgroundColor: 'rgba(255, 99, 132, 0.6)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Driven KMs'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Selling Price (₹ Lakhs)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Top brands by average price
+            const brandPrices = {};
+            carsData.forEach(car => {
+                const brand = car.Car_Name.split(' ')[0];
+                if (!brandPrices[brand]) brandPrices[brand] = [];
+                brandPrices[brand].push(car.Selling_Price);
+            });
+            
+            const brandAvgs = Object.entries(brandPrices)
+                .map(([brand, prices]) => ({
+                    brand,
+                    avgPrice: prices.reduce((a, b) => a + b, 0) / prices.length
+                }))
+                .sort((a, b) => b.avgPrice - a.avgPrice)
+                .slice(0, 10);
+            
+            charts.brand = new Chart(document.getElementById('brandChart'), {
+                type: 'bar',
+                data: {
+                    labels: brandAvgs.map(b => b.brand),
+                    datasets: [{
+                        label: 'Average Price',
+                        data: brandAvgs.map(b => b.avgPrice),
+                        backgroundColor: '#4BC0C0'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Average Price (₹ Lakhs)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateCharts() {
+            // Update charts with filtered data
+            const fuelCounts = {};
+            filteredCars.forEach(car => {
+                fuelCounts[car.Fuel_Type] = (fuelCounts[car.Fuel_Type] || 0) + 1;
+            });
+            
+            charts.fuel.data.labels = Object.keys(fuelCounts);
+            charts.fuel.data.datasets[0].data = Object.values(fuelCounts);
+            charts.fuel.update();
+            
+            // Update scatter plot
+            charts.scatter.data.datasets[0].data = filteredCars.map(car => ({
+                x: car.Driven_kms,
+                y: car.Selling_Price
+            }));
+            charts.scatter.update();
+        }
+    </script>
+</body>
+</html>
