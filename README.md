@@ -1,5 +1,7 @@
 # 🚗 Car Market Analytics Dashboard
 
+<img width="1349" height="576" alt="image" src="https://github.com/user-attachments/assets/0374fb10-6475-4b5e-9d57-02d4a75723b7" />
+
 A comprehensive web-based analytics dashboard for car market data analysis with interactive visualizations, filtering capabilities, and AI-powered price prediction.
 
 ![Dashboard Preview](https://img.shields.io/badge/Status-Complete-brightgreen)
@@ -275,9 +277,6 @@ We welcome contributions to improve the dashboard! Here's how you can help:
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
@@ -288,10 +287,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Contact
 
-**Project Maintainer**: [Your Name]
-- **Email**: your.email@example.com
-- **LinkedIn**: [Your LinkedIn Profile]
-- **GitHub**: [@yourusername](https://github.com/yourusername)
+**Project Maintainer**: [Hashir Ahmed]
+- **Email**: Hashirahmed330@gmail.com
+- **LinkedIn**: [https://www.linkedin.com/in/hashirahmed07/]
+- **GitHub**: [@CodeByHashir](https://github.com/CodeByHashir)
 
 ## 🔮 Future Enhancements
 
@@ -314,8 +313,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ⭐ **Star this repository if you found it helpful!**
 
-📊 **Live Demo**: [View Dashboard](https://yourusername.github.io/car-market-analytics-dashboard/)
+📊 **Live Demo**: [View Dashboard](https://github.com/CodeByHashir/Car-Market-Analysis-and-Prediction-System/)
 
-🐛 **Report Issues**: [GitHub Issues](https://github.com/yourusername/car-market-analytics-dashboard/issues)
 
-📖 **Documentation**: [Wiki](https://github.com/yourusername/car-market-analytics-dashboard/wiki)
+
